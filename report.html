@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Report Issue - Village Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="header">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">Services</a>
+      <a href="report.html">Report Issue</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>Report an Issue</h1>
+    <p class="small">Fill details and click Submit. Reports are saved on this device.</p>
+
+    <div class="card">
+      <div class="form-row">
+        <label for="name">Your name</label>
+        <input id="name" type="text" placeholder="e.g., Rama">
+      </div>
+
+      <div class="form-row">
+        <label for="village">Village / Locality</label>
+        <input id="village" type="text" placeholder="e.g., Karla">
+      </div>
+
+      <div class="form-row">
+        <label for="issue">Issue type</label>
+        <select id="issue">
+          <option>Street Light Issue</option>
+          <option>Water Problem</option>
+          <option>Road Damage</option>
+          <option>Drainage Issue</option>
+          <option>Garbage Problem</option>
+          <option>Electricity Problem</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="desc">Description</label>
+        <textarea id="desc" rows="4" placeholder="Write a short description..."></textarea>
+      </div>
+
+      <div style="text-align:right;">
+        <a class="btn" href="#" id="submitBtn">Submit</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Saved reports</h3>
+      <div id="reportsList" class="small"></div>
+      <p class="small">These are saved in your browser. To share a report, copy the text and send to a volunteer.</p>
+      <div style="margin-top:10px;">
+        <a class="btn" id="clearBtn" href="#">Clear All</a>
+      </div>
+    </div>
+
+    <p class="footer"><a href="index.html">Back to Home</a></p>
+  </div>
+
+<script>
+// Simple localStorage-based reporter
+function getReports(){
+  const r = localStorage.getItem('village_reports');
+  return r ? JSON.parse(r) : [];
+}
+function saveReports(arr){
+  localStorage.setItem('village_reports', JSON.stringify(arr));
+}
+function renderReports(){
+  const list = document.getElementById('reportsList');
+  const reports = getReports();
+  if(reports.length === 0){
+    list.innerHTML = '<div class="small">No reports yet.</div>';
+    return;
+  }
+  list.innerHTML = reports.map((rep, idx) => `
+    <div class="report-item">
+      <strong>#${idx+1} — ${rep.issue}</strong>
+      <div class="small">${rep.name} | ${rep.village} | ${rep.date}</div>
+      <div style="margin-top:6px;">${rep.desc}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('submitBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const village = document.getElementById('village').value.trim();
+  const issue = document.getElementById('issue').value;
+  const desc = document.getElementById('desc').value.trim();
+  if(!name || !village || !desc){
+    alert('Please fill name, village and description.');
+    return;
+  }
+  const reports = getReports();
+  reports.unshift({
+    name, village, issue, desc,
+    date: new Date().toLocaleString()
+  });
+  saveReports(reports);
+  renderReports();
+  // clear small fields
+  document.getElementById('desc').value = '';
+  alert('Report saved locally. Share it with a volunteer to take action.');
+});
+
+document.getElementById('clearBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  if(confirm('Delete all saved reports?')){
+    localStorage.removeItem('village_reports');
+    renderReports();
+  }
+});
+
+renderReports();
+</script>
+</body>
+</html>
